@@ -17,8 +17,9 @@ import {
   FormMessage,
 } from "./ui/form";
 import { Input } from "./ui/input";
-import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
+import { Textarea } from "./ui/textarea";
+import { useCreateRoom } from "@/hooks/use-create-room";
 
 const createRoomSchema = z.object({
   name: z.string().min(3, "Room name is required"),
@@ -28,6 +29,8 @@ const createRoomSchema = z.object({
 type CreateRoomFormData = z.infer<typeof createRoomSchema>;
 
 export function CreateRoomForm() {
+  const { mutateAsync: createRoom } = useCreateRoom();
+
   const createRoomForm = useForm<CreateRoomFormData>({
     resolver: zodResolver(createRoomSchema),
     defaultValues: {
@@ -36,8 +39,9 @@ export function CreateRoomForm() {
     },
   });
 
-  function handleCreateRoom(data: CreateRoomFormData) {
-    console.log("Creating room with data:", data);
+  async function handleCreateRoom(data: CreateRoomFormData) {
+    await createRoom(data);
+    createRoomForm.reset();
   }
 
   return (
