@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { PlayCircle, StopCircle } from "lucide-react";
 import { useState, useRef } from "react";
 import { Navigate, useParams } from "react-router-dom";
 
@@ -15,23 +16,9 @@ export function RecordRoomAudio() {
   const params = useParams<RoomParams>();
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  async function startRecording() {
-    if (!isRecordingSupported) {
-      alert("Recording not supported in this browser");
-      return;
-    }
-
-    setIsRecording(true);
-
-    const audio = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        sampleRate: 44_100,
-      },
-    });
-
+  function createRecorder(audio: MediaStream) {
     mediaRecorderRef.current = new MediaRecorder(audio, {
       mimeType: "audio/webm",
       audioBitsPerSecond: 64000,
@@ -54,6 +41,30 @@ export function RecordRoomAudio() {
     mediaRecorderRef.current.start();
   }
 
+  async function startRecording() {
+    if (!isRecordingSupported) {
+      alert("Recording not supported in this browser");
+      return;
+    }
+
+    setIsRecording(true);
+
+    const audio = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        sampleRate: 44_100,
+      },
+    });
+
+    createRecorder(audio);
+
+    intervalRef.current = setInterval(() => {
+      mediaRecorderRef.current?.stop();
+      createRecorder(audio);
+    }, 5000);
+  }
+
   function stopRecording() {
     setIsRecording(false);
     if (
@@ -61,6 +72,10 @@ export function RecordRoomAudio() {
       mediaRecorderRef.current.state !== "inactive"
     ) {
       mediaRecorderRef.current.stop();
+    }
+
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
     }
   }
 
@@ -94,13 +109,18 @@ export function RecordRoomAudio() {
     <div className="h-screen flex flex-col items-center justify-center gap-3">
       {isRecording ? (
         <Button onClick={stopRecording} variant="destructive">
+          <StopCircle />
           Stop Recording
         </Button>
       ) : (
-        <Button onClick={startRecording}>Start Recording</Button>
+        <Button onClick={startRecording}>
+          <PlayCircle /> Start Recording
+        </Button>
       )}
-      {isRecording && (
+      {isRecording ? (
         <p className="text-muted-foreground text-xs">Recording...</p>
+      ) : (
+        <p className="text-muted-foreground text-xs">Paused</p>
       )}
     </div>
   );
