@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -50,6 +51,8 @@ export function QuestionForm({ roomId }: QuestionFormProps) {
     createQuestionForm.reset();
   }
 
+  const { isSubmitting } = createQuestionForm.formState;
+
   return (
     <Card>
       <CardHeader>
@@ -73,6 +76,7 @@ export function QuestionForm({ roomId }: QuestionFormProps) {
                   <FormControl>
                     <Textarea
                       className="min-h-[100px]"
+                      disabled={isSubmitting}
                       placeholder="What would you like to know?"
                       {...field}
                     />
@@ -82,7 +86,16 @@ export function QuestionForm({ roomId }: QuestionFormProps) {
               )}
             />
 
-            <Button type="submit">Send question</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="animate-spin" />
+                  Sending...
+                </span>
+              ) : (
+                "Send question"
+              )}
+            </Button>
           </form>
         </Form>
       </CardContent>
