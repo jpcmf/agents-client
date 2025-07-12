@@ -1,7 +1,8 @@
-import { Button } from "@/components/ui/button";
-import { PlayCircle, StopCircle } from "lucide-react";
 import { useState, useRef } from "react";
 import { Navigate, useParams } from "react-router-dom";
+import { PlayCircle, StopCircle } from "lucide-react";
+import { getApiUrl } from "@/http/api";
+import { Button } from "@/components/ui/button";
 
 const isRecordingSupported =
   !!navigator.mediaDevices &&
@@ -84,13 +85,10 @@ export function RecordRoomAudio() {
 
     formData.append("file", audio, "audio.webm");
 
-    const response = await fetch(
-      `http://localhost:3333/rooms/${params.id}/audio`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
+    const response = await fetch(`${getApiUrl()}/rooms/${params.id}/audio`, {
+      method: "POST",
+      body: formData,
+    });
 
     if (!response.ok) {
       console.error("Failed to upload audio");

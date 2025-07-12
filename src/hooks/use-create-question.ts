@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { getApiUrl } from "@/http/api";
 import type { CreateQuestionRequest } from "@/http/types/create-question-request";
 import type { CreateQuestionResponse } from "@/http/types/create-question-response";
 import type { GetRoomQuestionsResponse } from "@/http/types/get-room-question-response";
@@ -8,16 +9,13 @@ export function useCreateQuestion(roomId: string) {
 
   return useMutation({
     mutationFn: async (data: CreateQuestionRequest) => {
-      const response = await fetch(
-        `http://localhost:3333/rooms/${roomId}/questions`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        }
-      );
+      const response = await fetch(`${getApiUrl()}/rooms/${roomId}/questions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to create question");
